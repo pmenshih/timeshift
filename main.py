@@ -20,6 +20,9 @@ ABSTRACTAPI_URL = (
 
 
 def find_city():
+    '''
+    Поиск города и информации о его времени с помощью abstractapi.com.
+    '''
     city_name = input('Введите имя города: ')
 
     city_data = requests.get(ABSTRACTAPI_URL + city_name).json()
