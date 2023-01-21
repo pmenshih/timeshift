@@ -16,6 +16,11 @@ import requests
 
 
 def find_city():
+    '''
+    Поиск города с помощью https://abstractapi.com.
+
+    Возвращает словарь с именем города и его часовым поясом.
+    '''
     ABSTRACTAPI_URL = (
         'https://timezone.abstractapi.com/v1/current_time/?'
         'api_key=30a9c393ff8c4585bec59a8a02cfe5be&location='
