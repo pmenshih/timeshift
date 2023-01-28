@@ -10,7 +10,11 @@ def index(request):
         abstract_api = timeshift_lib.Abstractapi()
         city_data = abstract_api.find_city(city_name)
 
-        if city_data:
-            response_data.update(city_data)
+        if not city_data.get('error'):
+            city_data['local_time'] = abstract_api.get_local_time(
+                city_data['gmt_offset']
+            )
+
+        response_data.update(city_data)
 
     return render(request, 'timeshift/index.html', response_data)
