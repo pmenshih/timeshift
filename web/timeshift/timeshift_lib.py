@@ -35,8 +35,6 @@ class Abstractapi():
                 'error': f'Город с именем "{city_name}" не найден.'
             }
 
-        # print('Текущее время:', self.get_local_time(city_data['gmt_offset']))
-
         return {
             'gmt_offset': city_data['gmt_offset'],
             'name': city_name,
