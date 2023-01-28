@@ -5,7 +5,11 @@
   </head>
   <body>
     <div>
-      Hello world!
+      <form method="post">
+        {% csrf_token %}
+        <input name="city_name">
+        <input type="submit" value="Найти город">
+      </form>
     </div>
   </body>
 </html>
