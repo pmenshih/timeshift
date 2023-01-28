@@ -37,7 +37,7 @@ class Abstractapi(Provider):
         '''
 
         city_data = requests.get(self.ABSTRACTAPI_URL + city_name).json()
-        if not city_data:
+        if not city_data or city_data.get('error', False):
             # print(f'Город с именем "{city_name}" не найден.')
             return None
 
