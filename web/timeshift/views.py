@@ -1,6 +1,16 @@
 from django.shortcuts import render
 
+from timeshift import timeshift_lib
+
 def index(request):
+    response_data = dict()
+
     if request.method == 'POST':
-        print('>>>> ', request.POST['city_name'])
-    return render(request, 'timeshift/index.html')
+        city_name = request.POST['city_name']
+        abstract_api = timeshift_lib.Abstractapi()
+        city_data = abstract_api.find_city(city_name)
+
+        if city_data:
+            response_data.update(city_data)
+
+    return render(request, 'timeshift/index.html', response_data)
