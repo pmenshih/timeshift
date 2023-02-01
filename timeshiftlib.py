@@ -22,4 +22,4 @@ class InMemoryAPIMock:
         self.cities = cities
 
     def fetch_city_data(self, city_name: str) -> Optional[dict[str, int]]:
-        return self.cities.get(city_name)
+        return self.cities.get(city_name)['gmt_offset']

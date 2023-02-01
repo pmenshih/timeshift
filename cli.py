@@ -17,15 +17,21 @@ from auxutils import get_local_time
 from timeshiftlib import AbstractAPI, InMemoryAPIMock
 
 
-# Протоколы позволяют определять интерфейс без прямой необходимости наследования.
-# Если мы уберём наследование от протокола, то mypy будет ругаться, что класс AbstractAPI не может быть использован в классе Application
-class CityDataFetcher(Protocol): # Здесь мы определили интерфейс, которому должны следовать классы, которые хотят чтобы наше приложение ими воспользовалось.
+# Протоколы позволяют определять интерфейс
+# без прямой необходимости наследования.
+# Если мы уберём наследование от протокола, то mypy будет ругаться,
+# что класс AbstractAPI не может быть использован в классе Application
 
-    def fetch_city_data(self, city_name: str) -> Optional[dict[str, int]]:  # Функция должна вернуть словарь с ключом gmt_offset
+# Здесь мы определили интерфейс,которому должны следовать классы,
+# которые хотят чтобы наше приложение ими воспользовалось.
+class CityDataFetcher(Protocol):
+
+    # Функция должна вернуть словарь с ключом gmt_offset
+    def fetch_city_data(self, city_name: str) -> Optional[dict[str, int]]:
         '''
         Метод принимает имя города `city_name` и возвращает словарь,
-        где под ключём `gmt_offset` должен лежать сдвиг таймзоны в которой находится город `city_name`
-        относительно GMT
+        где под ключём `gmt_offset` должен лежать сдвиг таймзоны
+       в которой находится город `city_name` относительно GMT
         '''
         ...
 
@@ -46,10 +52,9 @@ class Application:
     Содержит в себе логику обработки пользовательских команд.
     '''
 
-    def __init__(self, fetcher: CityDataFetcher):
+    def __init__(self, fetcher):
         self.fetcher = fetcher
 
-        self.cities = dict()
         self.commands = {
             '1': self.show_cities_list,
             '2': self.add_city,
@@ -76,15 +81,23 @@ class Application:
         Метод выводит список городов на экран.
         '''
         current_utc_time = datetime.datetime.now(datetime.timezone.utc)
-        for city_name in sorted(self.cities):
-            print(
-                f'{city_name}: {get_local_time(self.cities[city_name].timezone, current_utc_time)}'
-            )
+
+        if self.fetcher.__class__.__name__ == 'InMemoryAPIMock':
+            for city_name in sorted(list(self.fetcher.cities.keys())):
+                local_time = get_local_time(
+                    self.fetcher.fetch_city_data(city_name),
+                    current_utc_time)
+                print(
+                    f'{city_name}: {local_time}'
+                )
+        else:
+            print('Вы используете AbstractAPI')
 
     def add_city(self):
         '''
-        Метод получает информацию о городе, который интересует пользователя, используя реализацию `self.fetcher`,
-        после чего выводит на экран текущее время в городе.
+        Метод получает информацию о городе, который интересует пользователя,
+        используя реализацию `self.fetcher`, после чего выводит на экран
+        текущее время в городе.
         '''
         city_name = input('Введите имя города: ')
 
@@ -108,11 +121,9 @@ class Application:
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
-        # Если программа была запущена как:
-        # python cli.py test
+        # Если программа была запущена как: python cli.py test
         # То используем реализацию фетчера данных
-        # не использующую сторонний сервис, а хранящую
-        # данные локально.
+        # не использующую сторонний сервис, а хранящуюданные локально.
         fetcher = InMemoryAPIMock(
             {
                 "Moscow": {'gmt_offset': 3},
