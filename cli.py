@@ -55,6 +55,7 @@ class Application:
     def __init__(self, fetcher):
         self.fetcher = fetcher
 
+        self.cities = dict()
         self.commands = {
             '1': self.show_cities_list,
             '2': self.add_city,
@@ -85,13 +86,19 @@ class Application:
         if self.fetcher.__class__.__name__ == 'InMemoryAPIMock':
             for city_name in sorted(list(self.fetcher.cities.keys())):
                 local_time = get_local_time(
-                    self.fetcher.fetch_city_data(city_name),
+                    self.fetcher.fetch_city_data(city_name)['gmt_offset'],
                     current_utc_time)
                 print(
                     f'{city_name}: {local_time}'
                 )
         else:
-            print('Вы используете AbstractAPI')
+            for city_name in sorted(list(self.cities.keys())):
+                local_time = get_local_time(
+                    self.cities[city_name].timezone,
+                    current_utc_time)
+                print(
+                    f'{city_name}: {local_time}'
+                )
 
     def add_city(self):
         '''
@@ -100,11 +107,9 @@ class Application:
         текущее время в городе.
         '''
         city_name = input('Введите имя города: ')
-
         city_data = self.fetcher.fetch_city_data(city_name)
 
         if not city_data:
-            print(f'Город с именем "{city_name}" не найден.')
             return
 
         print('Текущее время:', get_local_time(city_data['gmt_offset']))
