@@ -14,7 +14,7 @@ import sys
 from typing import Optional, Protocol
 
 from auxutils import get_local_time
-from timeshiftlib import AbstractAPI, InMemoryAPIMock
+from timeshift_lib import AbstractAPI, InMemoryAPIMock
 
 
 # Протоколы позволяют определять интерфейс
