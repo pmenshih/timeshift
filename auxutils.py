@@ -1,5 +1,6 @@
 import datetime
 
+
 def get_local_time(
     gmt_offset,
     current_utc_time=datetime.datetime.now(datetime.timezone.utc)
