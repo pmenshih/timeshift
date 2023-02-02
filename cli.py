@@ -22,9 +22,11 @@ from timeshiftlib import AbstractAPI, InMemoryAPIMock
 # Если мы уберём наследование от протокола, то mypy будет ругаться,
 # что класс AbstractAPI не может быть использован в классе Application
 
-# Здесь мы определили интерфейс,которому должны следовать классы,
-# которые хотят чтобы наше приложение ими воспользовалось.
 class CityDataFetcher(Protocol):
+    '''
+    Здесь мы определили интерфейс,которому должны следовать классы,
+    которые хотят чтобы наше приложение ими воспользовалось.
+    '''
 
     # Функция должна вернуть словарь с ключом gmt_offset
     def fetch_city_data(self, city_name: str) -> Optional[dict[str, int]]:
@@ -44,6 +46,9 @@ class City:
         self.name = name
         self.timezone = timezone
 
+    def __str__(self) -> str:
+        return f'{self.name}'
+
 
 class Application:
     '''
@@ -55,7 +60,7 @@ class Application:
     def __init__(self, fetcher):
         self.fetcher = fetcher
 
-        self.cities = dict()
+        # self.cities = dict()
         self.commands = {
             '1': self.show_cities_list,
             '2': self.add_city,
@@ -82,20 +87,20 @@ class Application:
         Метод выводит список городов на экран.
         '''
         current_utc_time = datetime.datetime.now(datetime.timezone.utc)
-
         if self.fetcher.__class__.__name__ == 'InMemoryAPIMock':
-            for city_name in sorted(list(self.fetcher.cities.keys())):
+            # проверяем через какой обьект мы работаем
+            # если через БД, то выводим данные котоыре находятся в БД
+            for city_name in self.fetcher.cities:
                 local_time = get_local_time(
-                    self.fetcher.fetch_city_data(city_name)['gmt_offset'],
+                    self.fetcher.fetch_city_data(city_name),
                     current_utc_time)
                 print(
                     f'{city_name}: {local_time}'
                 )
+        # если работаем через AbstractAPI то достаем из локального массива
         else:
-            for city_name in sorted(list(self.cities.keys())):
-                local_time = get_local_time(
-                    self.cities[city_name].timezone,
-                    current_utc_time)
+            for city_name in self.fetcher.cities:
+                local_time = get_local_time(city_name.timezone)
                 print(
                     f'{city_name}: {local_time}'
                 )
@@ -105,6 +110,8 @@ class Application:
         Метод получает информацию о городе, который интересует пользователя,
         используя реализацию `self.fetcher`, после чего выводит на экран
         текущее время в городе.
+        И добавляет его в базу данных,
+        чтобы можно вывести вместе с общим списком
         '''
         city_name = input('Введите имя города: ')
         city_data = self.fetcher.fetch_city_data(city_name)
@@ -112,10 +119,10 @@ class Application:
         if not city_data:
             return
 
-        print('Текущее время:', get_local_time(city_data['gmt_offset']))
-
-        city = City(city_name, city_data['gmt_offset'])
-        self.cities[city_name] = city
+        print('Текущее время:', get_local_time(city_data[1]))
+        # добавляем в БД
+        new_city = City(city_name, city_data[1])
+        self.fetcher.cities.append(new_city)
 
     def exit(self):
         '''
@@ -129,13 +136,11 @@ if __name__ == '__main__':
         # Если программа была запущена как: python cli.py test
         # То используем реализацию фетчера данных
         # не использующую сторонний сервис, а хранящуюданные локально.
-        fetcher = InMemoryAPIMock(
-            {
-                "Moscow": {'gmt_offset': 3},
-                "Paris": {'gmt_offset': 1},
-                "Berlin": {'gmt_offset': 1}
-            }
-        )
+        Moscow = City('Moscow', 3)
+        Paris = City('Paris', 1)
+        Berlin = City('Berlin', 1)
+        cities_list: list = [Moscow, Paris, Berlin]
+        fetcher = InMemoryAPIMock(cities_list)
     else:
         # в противном случае используем настоящую реализацию.
         fetcher = AbstractAPI()
