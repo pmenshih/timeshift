@@ -11,7 +11,7 @@
 import datetime
 import sys
 
-from typing import Optional, Protocol
+from typing import Protocol
 
 import timeshift_lib as tsl
 from timeshift_lib import AbstractAPI, InMemoryAPIMock
@@ -29,7 +29,7 @@ class CityDataFetcher(Protocol):
     '''
 
     # Функция должна вернуть словарь с ключом gmt_offset
-    def fetch_city_data(self, city_name: str) -> Optional[dict[str, int]]:
+    def fetch_city_data(self, city_name: str) -> dict:
         '''
         Метод принимает имя города `city_name` и возвращает словарь,
         где под ключём `gmt_offset` должен лежать сдвиг таймзоны
@@ -92,8 +92,9 @@ class Application:
             # если через БД, то выводим данные котоыре находятся в БД
             for city_name in self.fetcher.cities:
                 local_time = self.fetcher.get_local_time(
-                    self.fetcher.fetch_city_data(city_name),
-                    current_utc_time)
+                    self.fetcher.fetch_city_data(city_name)['gmt_offset'],
+                    current_utc_time
+                )
                 print(
                     f'{city_name}: {local_time}'
                 )
@@ -119,9 +120,12 @@ class Application:
         if not city_data:
             return
 
-        print('Текущее время:', self.fetcher.get_local_time(city_data[1]))
+        print(
+            'Текущее время:',
+            self.fetcher.get_local_time(city_data['gmt_offset'])
+        )
         # добавляем в БД
-        new_city = City(city_name, city_data[1])
+        new_city = City(city_name, city_data['gmt_offset'])
         self.fetcher.cities.append(new_city)
 
     def exit(self):
