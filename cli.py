@@ -13,7 +13,7 @@ import sys
 
 from typing import Optional, Protocol
 
-from auxutils import get_local_time
+import timeshift_lib as tsl
 from timeshift_lib import AbstractAPI, InMemoryAPIMock
 
 
@@ -91,7 +91,7 @@ class Application:
             # проверяем через какой обьект мы работаем
             # если через БД, то выводим данные котоыре находятся в БД
             for city_name in self.fetcher.cities:
-                local_time = get_local_time(
+                local_time = self.fetcher.get_local_time(
                     self.fetcher.fetch_city_data(city_name),
                     current_utc_time)
                 print(
@@ -100,7 +100,7 @@ class Application:
         # если работаем через AbstractAPI то достаем из локального массива
         else:
             for city_name in self.fetcher.cities:
-                local_time = get_local_time(city_name.timezone)
+                local_time = self.fetcher.get_local_time(city_name.timezone)
                 print(
                     f'{city_name}: {local_time}'
                 )
@@ -119,7 +119,7 @@ class Application:
         if not city_data:
             return
 
-        print('Текущее время:', get_local_time(city_data[1]))
+        print('Текущее время:', self.fetcher.get_local_time(city_data[1]))
         # добавляем в БД
         new_city = City(city_name, city_data[1])
         self.fetcher.cities.append(new_city)
