@@ -19,6 +19,12 @@ class AbstractAPI:
         Достаем информацию о городе через API.
         '''
         city_data = requests.get(ABSTRACTAPI_URL + city_name).json()
+        
+        if not city_data or city_data.get('error', False):
+            return {
+                'error': f'Город с именем {city_name} не найден.'
+            }
+
         return {
             'gmt_offset': city_data['gmt_offset'],
             'name': city_name,
