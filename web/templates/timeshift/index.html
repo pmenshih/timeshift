@@ -15,7 +15,13 @@
     
     {% comment %} Блок вывода информации о городе. {% endcomment %}
     <div>
-
+      {% if error %}
+        <div>
+          {{ error }}
+        </div>
+      {% elif name %}
+        {{ name }} : {{ local_time }}
+      {% endif %}
     </div>
   </body>
 </html>
