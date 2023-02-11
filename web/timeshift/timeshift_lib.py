@@ -38,9 +38,9 @@ class Abstractapi():
         return {
             'gmt_offset': city_data['gmt_offset'],
             'name': city_name,
+            'datetime': city_data['datetime']
         }
 
     def show_cities_list(self, cities):
         for city_name in sorted(cities):
             print(f'{city_name}: {self.get_local_time(cities[city_name])}')
-

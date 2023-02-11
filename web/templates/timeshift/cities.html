@@ -1,0 +1,13 @@
+{% extends 'timeshift/base.html' %}
+
+{% block content %}
+
+    <div class="mt-5">
+        {% for city in cities %}
+            <div class="alert alert-info">
+            {{ city.name }} {{ city.time }}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
